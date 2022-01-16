@@ -49,7 +49,7 @@ const login = async (req, res) => {
     if (!isPasswordCorrect)
         throw new UnauthenticatedError('Invalid credentials')
 
-    res.status(StatusCodes.OK).json({ user: { name: user.name }, token })
+    res.status(StatusCodes.OK).json({ user: { name: user.name, email: user.email }, token })
 }
 
 module.exports = {

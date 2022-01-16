@@ -8,7 +8,7 @@ const {
 } = require('../controlers/auth')
 
 router.route('/register').post(register)
-router.route('/activate/:clientToken').post(activateAccount)
+router.route('/activate/:clientToken').patch(activateAccount)
 router.route('/login').post(login)
 
 module.exports = router
