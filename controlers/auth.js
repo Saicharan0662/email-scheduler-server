@@ -45,10 +45,14 @@ const login = async (req, res) => {
         res.status(StatusCodes.UNAUTHORIZED).json({ msg: `Please verify your email, verification link sent to the email ${user.email}` })
     }
 
-    const isPasswordCorrect = user.comparePassword(password)
+    const isPasswordCorrect = await user.comparePassword(password)
     if (!isPasswordCorrect)
         throw new UnauthenticatedError('Invalid credentials')
 
+    // const token = jwt.sign({ name: user.name, email, password }, process.env.JWT_SECRET, {
+    //     expiresIn:
+    //         process.env.JWT_LIFETIME
+    // })
     res.status(StatusCodes.OK).json({ user: { name: user.name, email: user.email }, token })
 }
 
