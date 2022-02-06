@@ -53,7 +53,7 @@ UserSchema.methods.sendVerificationEmail = async function (token) {
         from: 'saicharana01@gmail.com',
         to: this.email,
         subject: 'Activate your account',
-        html: `<p>We are glad you are here, please click on below link to activate your account.</p><p>It will active for only 20 minutes</p> <a href="https://localhost:3000/confirmation/${token}"}>activate account</a>`
+        html: `<p>We are glad you are here, please click on below link to activate your account.</p><p>It will active for only 20 minutes</p> <a href="http://localhost:3000/confirmation/${token}"}>activate account</a>`
     };
 
     transporter.sendMail(mailOptions, function (error, info) {

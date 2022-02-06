@@ -8,7 +8,7 @@ const register = async (req, res) => {
     const token = jwt.sign({ name, email, password }, process.env.JWT_SECRET, { expiresIn: '20m' })
     const user = await User.create({ name, email, password })
     user.sendVerificationEmail(token)
-    res.status(StatusCodes.UNAUTHORIZED).json({ user: { name: user.name, email: user.email }, msg: 'Please confirm your email' })
+    res.status(StatusCodes.ACCEPTED).json({ user: { name: user.name, email: user.email }, msg: 'Please confirm your email' })
 }
 
 const activateAccount = async (req, res) => {
@@ -23,7 +23,7 @@ const activateAccount = async (req, res) => {
     } catch (err) {
         throw new UnauthenticatedError(`Not authorized`)
     }
-    res.status(StatusCodes.CREATED).json({ user: { name: user.name }, clientToken })
+    res.status(StatusCodes.CREATED).json({ user: { name: user.name, email: user.email }, clientToken })
 }
 
 const login = async (req, res) => {
