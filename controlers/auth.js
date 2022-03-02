@@ -2,6 +2,9 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { StatusCodes } = require('http-status-codes');
 const { BadRequestError, UnauthenticatedError } = require('../errors/index');
+const { OAuth2Client } = require('google-auth-library');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const register = async (req, res) => {
     const { name, email, password } = req.body
@@ -56,8 +59,63 @@ const login = async (req, res) => {
     res.status(StatusCodes.OK).json({ user: { name: user.name, email: user.email }, token })
 }
 
+const googleSignup = async (req, res) => {
+    const { id_token } = req.body
+    client.verifyIdToken({ idToken: id_token, audience: process.env.GOOGLE_CLIENT_ID }).then(async response => {
+        const { email_verified, email, name } = response.payload
+        if (email_verified) {
+            // console.log(response.payload)
+            try {
+                const userInDB = await User.findOne({ email })
+                if (userInDB) {
+                    res.status(StatusCodes.BAD_REQUEST).json({ msg: `Account with email ${email} already exists` })
+                }
+                const password = email + process.env.JWT_SECRET
+                const user = await User.create({ email, name, password, isActivated: true })
+                const token = jwt.sign({ name: user.name, email, password }, process.env.JWT_SECRET, {
+                    expiresIn:
+                        process.env.JWT_LIFETIME
+                })
+                res.status(StatusCodes.CREATED).json({ user: { name: user.name, email: user.email }, token })
+            } catch (error) {
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: 'Something went wrong' })
+            }
+
+        }
+    })
+
+    // res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: 'Something went wrong' })
+}
+
+const googleLogin = async (req, res) => {
+    const { id_token } = req.body
+    client.verifyIdToken({ idToken: id_token, audience: process.env.GOOGLE_CLIENT_ID }).then(async response => {
+        const { email_verified, email, name } = response.payload
+        if (email_verified) {
+            try {
+                const user = await User.findOne({ email })
+                if (!user) {
+                    res.status(StatusCodes.UNAUTHORIZED).json({ msg: `Account with email ${email} does not exist` })
+                }
+                const password = email + process.env.JWT_SECRET
+                const token = jwt.sign({ name: user.name, email, password }, process.env.JWT_SECRET, {
+                    expiresIn:
+                        process.env.JWT_LIFETIME
+                })
+
+                res.status(StatusCodes.OK).json({ user: { name: user.name, email: user.email }, token })
+
+            } catch (error) {
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: 'Something went wrong' })
+            }
+        }
+    })
+}
+
 module.exports = {
     register,
     activateAccount,
-    login
+    login,
+    googleSignup,
+    googleLogin
 }
