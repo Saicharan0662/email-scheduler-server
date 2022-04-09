@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const { StatusCodes } = require('http-status-codes');
 const { BadRequestError, UnauthenticatedError } = require('../errors/index');
 const { OAuth2Client } = require('google-auth-library');
@@ -59,6 +60,40 @@ const login = async (req, res) => {
     res.status(StatusCodes.OK).json({ user: { name: user.name, email: user.email }, token })
 }
 
+const resetPasswordEmail = async (req, res) => {
+    const { clientToken } = req.body
+    let email;
+    try {
+        const payload = jwt.verify(clientToken, process.env.JWT_SECRET)
+        email = payload.email
+        const user = await User.findOne({ email: payload.email })
+        user.sendResetPasswordEmail(clientToken)
+    } catch (error) {
+        console.log(error)
+        throw new UnauthenticatedError('Invalid credentials')
+    }
+
+    res.status(StatusCodes.OK).json({ msg: `Reset password link sent to ${email}` })
+}
+
+const resetPassword = async (req, res) => {
+    const { email, newPassword } = req.body
+    const user = await User.findOne({ email })
+    if (!user)
+        throw new UnauthenticatedError('Invalid credentials')
+    const salt = await bcrypt.genSaltSync(10)
+    const password = await bcrypt.hash(newPassword, salt)
+    const updatedUser = await User.findOneAndUpdate({ email }, { password }, {
+        new: true,
+        runValidators: true
+    })
+    const token = jwt.sign({ name: updatedUser.name, email, password: newPassword }, process.env.JWT_SECRET, {
+        expiresIn:
+            process.env.JWT_LIFETIME
+    })
+    res.status(StatusCodes.OK).json({ user: { name: updatedUser.name, email: updatedUser.email }, token })
+}
+
 const googleSignup = async (req, res) => {
     const { id_token } = req.body
     client.verifyIdToken({ idToken: id_token, audience: process.env.GOOGLE_CLIENT_ID }).then(async response => {
@@ -116,6 +151,8 @@ module.exports = {
     register,
     activateAccount,
     login,
+    resetPasswordEmail,
+    resetPassword,
     googleSignup,
     googleLogin
 }
