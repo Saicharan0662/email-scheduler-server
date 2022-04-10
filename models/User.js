@@ -78,7 +78,7 @@ UserSchema.methods.sendResetPasswordEmail = async function (token) {
         from: 'saicharana01@gmail.com',
         to: this.email,
         subject: 'Reset your password',
-        html: `<p>Reset your password with the link provided, please click on below link to activate your account.</p><p>It will active for only 20 minutes</p> <a href="http://localhost:3000/reset-password-email/${token}"}>reset password</a>`
+        html: `<p>Reset your password with the link provided, please click on below link to activate your account.</p><p>It will active for only 20 minutes</p> <a href="http://localhost:3000/reset-password/${token}"}>reset password</a>`
     };
 
     transporter.sendMail(mailOptions, function (error, info) {

@@ -61,37 +61,38 @@ const login = async (req, res) => {
 }
 
 const resetPasswordEmail = async (req, res) => {
-    const { clientToken } = req.body
-    let email;
-    try {
-        const payload = jwt.verify(clientToken, process.env.JWT_SECRET)
-        email = payload.email
-        const user = await User.findOne({ email: payload.email })
-        user.sendResetPasswordEmail(clientToken)
-    } catch (error) {
-        console.log(error)
+    const { email } = req.body
+    const user = await User.findOne({ email })
+    if (!user)
         throw new UnauthenticatedError('Invalid credentials')
-    }
-
+    const token = jwt.sign({ name: user.name, email }, process.env.JWT_SECRET, {
+        expiresIn:
+            '20m'
+    })
+    await user.sendResetPasswordEmail(token)
     res.status(StatusCodes.OK).json({ msg: `Reset password link sent to ${email}` })
 }
 
 const resetPassword = async (req, res) => {
-    const { email, newPassword } = req.body
-    const user = await User.findOne({ email })
-    if (!user)
-        throw new UnauthenticatedError('Invalid credentials')
-    const salt = await bcrypt.genSaltSync(10)
-    const password = await bcrypt.hash(newPassword, salt)
-    const updatedUser = await User.findOneAndUpdate({ email }, { password }, {
-        new: true,
-        runValidators: true
-    })
-    const token = jwt.sign({ name: updatedUser.name, email, password: newPassword }, process.env.JWT_SECRET, {
+    const { newPassword, clientToken } = req.body
+    let user, hashedPassword;
+    try {
+        const payload = jwt.verify(clientToken, process.env.JWT_SECRET)
+        const salt = await bcrypt.genSalt(10)
+        hashedPassword = await bcrypt.hash(newPassword, salt)
+        user = await User.findOneAndUpdate({ email: payload.email }, { password: hashedPassword }, {
+            new: true,
+            runValidators: true
+        })
+    } catch (error) {
+        console.log(error)
+        throw new UnauthenticatedError(`Not authorized`)
+    }
+    const token = jwt.sign({ name: user.name, email: user.email, password: hashedPassword }, process.env.JWT_SECRET, {
         expiresIn:
             process.env.JWT_LIFETIME
     })
-    res.status(StatusCodes.OK).json({ user: { name: updatedUser.name, email: updatedUser.email }, token })
+    res.status(StatusCodes.OK).json({ user: { name: user.name, email: user.email }, token })
 }
 
 const googleSignup = async (req, res) => {
