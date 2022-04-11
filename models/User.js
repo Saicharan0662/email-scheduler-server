@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
+const getVerificationEmail = require('../emails/verification');
+const getResetPassEmail = require('../emails/resetpassword');
 
 const UserSchema = mongoose.Schema({
     name: {
@@ -53,7 +55,7 @@ UserSchema.methods.sendVerificationEmail = async function (token) {
         from: 'saicharana01@gmail.com',
         to: this.email,
         subject: 'Activate your account',
-        html: `<p>We are glad you are here, please click on below link to activate your account.</p><p>It will active for only 20 minutes</p> <a href="http://localhost:3000/confirmation/${token}"}>activate account</a>`
+        html: getVerificationEmail(token, this.name)
     };
 
     transporter.sendMail(mailOptions, function (error, info) {
@@ -78,7 +80,7 @@ UserSchema.methods.sendResetPasswordEmail = async function (token) {
         from: 'saicharana01@gmail.com',
         to: this.email,
         subject: 'Reset your password',
-        html: `<p>Reset your password with the link provided, please click on below link to activate your account.</p><p>It will active for only 20 minutes</p> <a href="http://localhost:3000/reset-password/${token}"}>reset password</a>`
+        html: getResetPassEmail(token, this.name)
     };
 
     transporter.sendMail(mailOptions, function (error, info) {
