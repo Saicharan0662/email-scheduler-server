@@ -79,7 +79,7 @@ UserSchema.methods.sendResetPasswordEmail = async function (token) {
     const mailOptions = {
         from: 'saicharana01@gmail.com',
         to: this.email,
-        subject: 'E-Schedule Password Reset',
+        subject: 'E-Scheduler Password Reset',
         html: getResetPassEmail(token, this.name)
     };
 
