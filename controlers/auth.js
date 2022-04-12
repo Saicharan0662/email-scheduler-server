@@ -81,7 +81,6 @@ const resetPassword = async (req, res) => {
             runValidators: true
         })
     } catch (error) {
-        console.log(error)
         throw new UnauthenticatedError(`Not authorized`)
     }
     const token = jwt.sign({ name: user.name, email: user.email, password: hashedPassword }, process.env.JWT_SECRET, {

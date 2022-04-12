@@ -32,10 +32,8 @@ const scheduleEmail = async (req, res) => {
         const task = cron.schedule(`*/${minutes} */${hours} */${date} */${month + 1} *`, () => {
             transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
-                    console.log(error);
                     task.stop()
                 } else {
-                    console.log('Email sent: ' + info.response);
                     task.stop()
                 }
             });
