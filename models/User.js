@@ -54,7 +54,7 @@ UserSchema.methods.sendVerificationEmail = async function (token) {
     const mailOptions = {
         from: 'saicharana01@gmail.com',
         to: this.email,
-        subject: 'Activate your account',
+        subject: 'Welcome, Please Verify Your Email',
         html: getVerificationEmail(token, this.name)
     };
 
@@ -79,7 +79,7 @@ UserSchema.methods.sendResetPasswordEmail = async function (token) {
     const mailOptions = {
         from: 'saicharana01@gmail.com',
         to: this.email,
-        subject: 'Reset your password',
+        subject: 'E-Schedule Password Reset',
         html: getResetPassEmail(token, this.name)
     };
 
