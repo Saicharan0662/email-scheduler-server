@@ -53,10 +53,6 @@ const login = async (req, res) => {
     if (!isPasswordCorrect)
         throw new UnauthenticatedError('Invalid credentials')
 
-    // const token = jwt.sign({ name: user.name, email, password }, process.env.JWT_SECRET, {
-    //     expiresIn:
-    //         process.env.JWT_LIFETIME
-    // })
     res.status(StatusCodes.OK).json({ user: { name: user.name, email: user.email }, token })
 }
 
@@ -100,7 +96,6 @@ const googleSignup = async (req, res) => {
     client.verifyIdToken({ idToken: id_token, audience: process.env.GOOGLE_CLIENT_ID }).then(async response => {
         const { email_verified, email, name } = response.payload
         if (email_verified) {
-            // console.log(response.payload)
             try {
                 const userInDB = await User.findOne({ email })
                 if (userInDB) {
@@ -119,8 +114,6 @@ const googleSignup = async (req, res) => {
 
         }
     })
-
-    // res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: 'Something went wrong' })
 }
 
 const googleLogin = async (req, res) => {
