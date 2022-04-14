@@ -4,6 +4,9 @@ This is an email scheduler server (client in different repository). It is made u
 ## Overview
 User can sign-up/sign-in, and scheduler emails. The authentication part contains email verification, reset password feature and OAuth.
 
+### Client repository
+- [Client repo](https://github.com/Saicharan0662/email-scheduler-client)
+
 ## Tech Stack
 - React.js
 - material-ui
