@@ -17,7 +17,7 @@ const sendErrorMail = (error, userEmail) => {
         from: process.env.SERVER_EMAIL,
         to: userEmail,
         subject: 'Oops something went wrong..',
-        html: getErrorMail(userEmail)
+        html: getErrorMail(userEmail, error)
     }
 
     transporter.sendMail(mailOptions, function (error, info) {
@@ -59,6 +59,8 @@ const scheduleEmail = async (req, res) => {
             transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
                     task.stop()
+                    // console.log(error.message)
+                    sendErrorMail(error.message, userEmail)
                 } else {
                     task.stop()
                 }
