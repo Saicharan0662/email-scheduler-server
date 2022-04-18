@@ -2,6 +2,32 @@ const nodemailer = require('nodemailer');
 const cron = require('node-cron');
 const { BadRequestError } = require('../errors');
 const { StatusCodes } = require('http-status-codes');
+const getErrorMail = require("../emails/errormail");
+
+const sendErrorMail = (error, userEmail) => {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.SERVER_EMAIL,
+            pass: process.env.SERVER_PASS
+        }
+    });
+
+    const mailOptions = {
+        from: process.env.SERVER_EMAIL,
+        to: userEmail,
+        subject: 'Oops something went wrong..',
+        html: getErrorMail(userEmail)
+    }
+
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            // console.log(error);
+        } else {
+            // console.log('Email sent: ' + info.response);
+        }
+    });
+}
 
 const scheduleEmail = async (req, res) => {
     const { userEmail, userPassword, email, schedule } = req.body
@@ -43,8 +69,7 @@ const scheduleEmail = async (req, res) => {
 
         task.start()
     } catch (error) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, msg: error })
-        res.send(error)
+        sendErrorMail(error, userEmail)
     }
 
     res.status(StatusCodes.OK).json({ success: true })
